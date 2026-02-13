@@ -23,6 +23,7 @@ y_velocity = 0
 gravity = 0.6
 jump_strength = -12
 on_ground = False
+speed = 15
 
 # Ground
 ground_y = HEIGHT - 50
@@ -36,10 +37,16 @@ while True:
 
         # Jump
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and on_ground:
+            if event.key == pygame.K_UP and on_ground:
                 y_velocity = jump_strength
                 on_ground = False
 
+                   # Key presses
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        x -= speed
+    if keys[pygame.K_RIGHT]:
+        x += speed
     # Apply gravity
     y_velocity += gravity
     y += y_velocity
