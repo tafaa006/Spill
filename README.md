@@ -1,1 +1,1 @@
-gravitasjon.
+jeg skal lage mere gameplay senere, kanskje legge til fieneder og sånt.
