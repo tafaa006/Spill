@@ -64,9 +64,7 @@ class PickupManager:
         self.pickups = []
 
     def add_pickup(self, x, y, pickup_type):
-        p = Pickup(x, y, pickup_type)
-        self.pickups.append(p)
-        return p
+        self.pickups.append(Pickup(x, y, pickup_type))
 
     def update(self, px, py, psize, gun):
         for pickup in self.pickups[:]:

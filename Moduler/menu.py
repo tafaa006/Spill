@@ -25,7 +25,6 @@ class Button:
         self.alpha = 0 
     
     def update_resolution(self, screen_width, screen_height):
-        """Update button position/size when resolution changes"""
         x = int(screen_width * self.x_percent)
         y = int(screen_height * self.y_percent)
         w = int(screen_width * self.w_percent)
@@ -36,7 +35,6 @@ class Button:
             self.rect = pygame.Rect(x, y, w, h)
     
     def update(self):
-        """Update button animations"""
         self.rect.y += (self.target_rect.y - self.rect.y) * 0.1
         self.rect.x += (self.target_rect.x - self.rect.x) * 0.1
         self.rect.width += (self.target_rect.width - self.rect.width) * 0.1
@@ -53,7 +51,6 @@ class Button:
         self.hover_scale += (self.target_hover_scale - self.hover_scale) * 0.2
     
     def draw(self, surface, font_size):
-        """Draw the button with animations"""
         scaled_w = self.rect.width * self.hover_scale
         scaled_h = self.rect.height * self.hover_scale
         scaled_x = self.rect.centerx - scaled_w / 2
@@ -75,7 +72,6 @@ class Button:
         surface.blit(button_surface, (scaled_x, scaled_y))
     
     def clicked(self, event):
-        """Check if button was clicked"""
         return (
             event.type == pygame.MOUSEBUTTONDOWN
             and event.button == 1
@@ -83,7 +79,6 @@ class Button:
         )
     
     def reset_animation(self):
-        """Reset button animation to start"""
         self.rect.y = self.target_rect.y - 50
         self.alpha = 0
 
@@ -103,13 +98,11 @@ class Menu:
 
         self.bg_color = (30, 30, 30)
 
-
+        self.title_image = None
         try:
             self.title_image = pygame.image.load("Bilder/grafyx.png").convert_alpha()
-            print("Title image loaded!")
         except:
-            print("Could not load title image")
-            self.title_image = None
+            pass
 
         self.title_y = -100
         self.title_alpha = 0
@@ -141,13 +134,11 @@ class Menu:
                     pygame.mixer.music.load('LydEffekter/MenuLyd.ogg')
                     self.music_loaded = True
                 except:
-                    print("Could not load menu music")
                     self.music_loaded = False
 
     def update_resolution(self, screen_width, screen_height):
         self.screen_width = screen_width
         self.screen_height = screen_height
-
         for button in self.buttons:
             button.update_resolution(screen_width, screen_height)
 
@@ -229,7 +220,6 @@ class Menu:
     def draw_particles(self, surface):
         for particle in self.particles:
             alpha = max(0, min(255, int(255 * (particle['y'] / self.screen_height))))
-
             particle_surface = pygame.Surface((particle['size'] * 2, particle['size'] * 2), pygame.SRCALPHA)
             pygame.draw.circle(
                 particle_surface,
@@ -253,19 +243,15 @@ class Menu:
 
     def draw(self, surface):
         surface.fill(self.bg_color)
-
         self.draw_background_waves(surface)
         self.draw_particles(surface)
 
-        # --- DRAW IMAGE TITLE ---
         if self.title_image:
             title_y_with_bounce = self.title_y - self.beat_bounce
-
             scale = self.beat_scale
             img_width = int(self.title_image.get_width() * scale)
             img_height = int(self.title_image.get_height() * scale)
 
-            # prevent oversized image
             max_width = int(self.screen_width * 0.6)
             if img_width > max_width:
                 scale = max_width / self.title_image.get_width()
@@ -274,14 +260,7 @@ class Menu:
 
             scaled_img = pygame.transform.smoothscale(self.title_image, (img_width, img_height))
             scaled_img.set_alpha(self.title_alpha)
-
-            surface.blit(
-                scaled_img,
-                (
-                    self.screen_width // 2 - img_width // 2,
-                    int(title_y_with_bounce - img_height // 2)
-                )
-            )
+            surface.blit(scaled_img, (self.screen_width // 2 - img_width // 2, int(title_y_with_bounce - img_height // 2)))
 
         button_font_size = self.get_scaled_font_size(36)
         for button in self.buttons:

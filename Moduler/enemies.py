@@ -130,9 +130,7 @@ class EnemyManager:
         self.enemies = []
 
     def add_enemy(self, x, y, enemy_type="static"):
-        e = Enemy(x, y, enemy_type)
-        self.enemies.append(e)
-        return e
+        self.enemies.append(Enemy(x, y, enemy_type))
 
     def update(self, px, py, player_bullets, world_width, ground_y):
         for e in self.enemies[:]:

@@ -40,7 +40,7 @@ def setup_level():
     pickup_manager.reset()
     enemy_manager.reset()
 
-    pickup_manager.add_pickup(200, world.ground_y - 50, "gun")
+    pickup_manager.add_pickup(3600, world.ground_y - 50, "gun")
     pickup_manager.add_pickup(400, world.ground_y - 50, "ammo")
     pickup_manager.add_pickup(600, world.ground_y - 50, "health")
 
@@ -77,9 +77,6 @@ def draw_ui(screen, player, gun):
             ammo_text = small_font.render(f"AMMO: {gun.ammo}", True, ammo_color)
         screen.blit(ammo_text, (right_x, int(130 * ui_scale)))
 
-    screen.blit(small_font.render(f"ZOOM: {camera.zoom:.1f}x", True, WHITE), (int(10 * ui_scale), HEIGHT - int(50 * ui_scale)))
-    screen.blit(small_font.render("[M] Kart", True, (180, 180, 180)), (int(10 * ui_scale), HEIGHT - int(30 * ui_scale)))
-
 running = True
 while running:
     for event in pygame.event.get():
@@ -108,27 +105,14 @@ while running:
                 print("Options not implemented yet")
 
         elif game_state == "game":
-            if event.type == pygame.MOUSEWHEEL:
-                if event.y > 0:
-                    camera.zoom_in()
-                elif event.y < 0:
-                    camera.zoom_out()
-
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 gun.shoot(player.x, player.y, player.size, player.get_shoot_direction())
 
             player.handle_input(event)
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    game_state = "menu"
-                    menu.reset_animations()
-                elif event.key == pygame.K_m:
-                    game_state = "map"
-
-        elif game_state == "map":
-            if event.type == pygame.KEYDOWN and event.key in (pygame.K_m, pygame.K_ESCAPE):
-                game_state = "game"
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                game_state = "menu"
+                menu.reset_animations()
 
     if game_state == "menu":
         menu.update()
@@ -155,15 +139,6 @@ while running:
         player.draw(screen, camera)
         gun.draw(screen, camera)
         draw_ui(screen, player, gun)
-
-    elif game_state == "map":
-        world.draw(screen, camera)
-        pickup_manager.draw(screen, camera)
-        enemy_manager.draw(screen, camera)
-        player.draw(screen, camera)
-        gun.draw(screen, camera)
-        draw_ui(screen, player, gun)
-        game_map.draw_overlay(screen, player.x, player.y)
 
     pygame.display.flip()
     clock.tick(60)
