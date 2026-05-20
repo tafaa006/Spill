@@ -1,69 +1,55 @@
 import pygame
-import sys
 
-pygame.init()
+class Map:
+    TILE_W = 80
+    TILE_H = 80
 
-# Screen
-WIDTH, HEIGHT = 400, 400
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Easy Maze")
-clock = pygame.time.Clock()
+    maze = [
+        "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
+    ]
 
-# Colors
-BG = (30, 30, 30)
-WALL = (200, 200, 200)
-GOAL = (0, 155, 0)
+    TILE_COLORS = {"1": (200, 200, 200), "2": (220, 60, 60)}
+    OVERLAY_COLORS = {"1": (200, 200, 200), "2": (220, 60, 60), "0": (50, 50, 50)}
 
-# Grid
-TILE = 40
-ROWS = COLS = WIDTH // TILE
+    def __init__(self):
+        self.rows = len(self.maze)
+        self.cols = len(self.maze[0])
+        self.world_width = self.cols * self.TILE_W
+        self.world_height = self.rows * self.TILE_H
+        self.ground_y = (self.rows - 1) * self.TILE_H
+        self._platforms = self._build_platforms()
 
-# Simple maze layout (1 = wall, 0 = path)
-maze = [
-    "1111111111",
-    "1000000001",
-    "1011111101",
-    "1010000101",
-    "1010110101",
-    "1010010101",
-    "1010111101",
-    "1000000001",
-    "1111111101",
-    "1111111111",
-]
+    def _build_platforms(self):
+        platforms = []
+        for row in range(self.rows):
+            for col in range(self.cols):
+                t = self.maze[row][col]
+                if t in self.TILE_COLORS:
+                    rect = pygame.Rect(col * self.TILE_W, row * self.TILE_H, self.TILE_W, self.TILE_H)
+                    platforms.append((rect, t))
+        return platforms
 
-# Player
-player_x, player_y = 1, 1
+    def get_platforms(self):
+        return self._platforms
 
-# Goal
-goal_x, goal_y = 6, 5
+    def draw_world(self, screen, camera):
+        for rect, tile_type in self._platforms:
+            pygame.draw.rect(screen, self.TILE_COLORS[tile_type], camera.apply_rect(rect))
 
-# Game loop
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-
-    # Draw
-    screen.fill(BG)
-
-    for y in range(ROWS):
-        for x in range(COLS):
-            if maze[y][x] == "1":
-                pygame.draw.rect(
-                    screen,
-                    WALL,
-                    (x * TILE, y * TILE, TILE, TILE)
-                )
-
-    # Goal
-    pygame.draw.rect(
-        screen,
-        GOAL,
-        (goal_x * TILE, goal_y * TILE, TILE, TILE)
-    )
-
-    pygame.display.flip()
-    clock.tick(10)
+    

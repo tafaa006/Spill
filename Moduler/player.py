@@ -150,15 +150,32 @@ class Player:
             self.y = 0
             self.y_velocity = 0
 
-    def check_ground_collision(self, ground_y):
-        if self.y + self.size >= ground_y:
-            self.y = ground_y - self.size
-            self.y_velocity = 0
-            self.on_ground = True
-            self.jumps_remaining = self.max_jumps
-            self.can_dash_in_air = True
-        else:
-            self.on_ground = False
+    def check_platform_collision(self, platforms):
+        self.on_ground = False
+        for rect, tile_type in platforms:
+            player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+            if not player_rect.colliderect(rect):
+                continue
+            overlap_left = (self.x + self.size) - rect.left
+            overlap_right = rect.right - self.x
+            overlap_top = (self.y + self.size) - rect.top
+            overlap_bottom = rect.bottom - self.y
+            min_o = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
+            if min_o == overlap_top and self.y_velocity >= 0:
+                self.y = rect.top - self.size
+                self.y_velocity = 0
+                self.on_ground = True
+                self.jumps_remaining = self.max_jumps
+                self.can_dash_in_air = True
+            elif min_o == overlap_bottom and self.y_velocity < 0:
+                self.y = rect.bottom
+                self.y_velocity = 0
+            elif min_o == overlap_left and self.x_velocity > 0:
+                self.x = rect.left - self.size
+                self.x_velocity = 0
+            elif min_o == overlap_right and self.x_velocity < 0:
+                self.x = rect.right
+                self.x_velocity = 0
 
     def draw(self, screen, camera):
         sx, sy = camera.apply(self.x, self.y)
