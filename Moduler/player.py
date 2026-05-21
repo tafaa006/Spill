@@ -152,9 +152,13 @@ class Player:
 
     def check_platform_collision(self, platforms):
         self.on_ground = False
+        killed = False
         for rect, tile_type in platforms:
             player_rect = pygame.Rect(self.x, self.y, self.size, self.size)
             if not player_rect.colliderect(rect):
+                continue
+            if tile_type == "2":
+                killed = True
                 continue
             overlap_left = (self.x + self.size) - rect.left
             overlap_right = rect.right - self.x
@@ -176,6 +180,7 @@ class Player:
             elif min_o == overlap_right and self.x_velocity < 0:
                 self.x = rect.right
                 self.x_velocity = 0
+        return killed
 
     def draw(self, screen, camera):
         sx, sy = camera.apply(self.x, self.y)
