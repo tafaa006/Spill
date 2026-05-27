@@ -9,10 +9,7 @@ class Enemy:
         self.size = 40
         self.type = enemy_type
         self.health = 3
-        self.max_health = 3
         self.alive = True
-        self.color = (255, 0, 0)
-        self.hit_color = (255, 200, 200)
         self.hit_timer = 0
         self.speed = 2
         self.direction = 1
@@ -25,12 +22,19 @@ class Enemy:
         if self.health <= 0:
             self.alive = False
 
-    def update(self, world_width):
+    def update(self, px, py, world_width):
         if not self.alive:
             return
         if self.hit_timer > 0:
             self.hit_timer -= 1
-        if self.type == "moving":
+
+        dist = math.sqrt((px - self.x) ** 2 + (py - self.y) ** 2)
+        if dist < 400:
+            if px < self.x:
+                self.x -= self.speed
+            elif px > self.x:
+                self.x += self.speed
+        elif self.type == "moving":
             self.x += self.speed * self.direction
             if self.x <= self.patrol_left or self.x >= self.patrol_right:
                 self.direction *= -1
@@ -42,13 +46,12 @@ class Enemy:
         if not self.alive:
             return
         sx, sy = camera.apply(self.x, self.y)
-        sz = self.size * camera.zoom
-        color = self.hit_color if self.hit_timer > 0 else self.color
-        pygame.draw.rect(screen, color, (sx, sy, sz, sz))
-        pygame.draw.rect(screen, (0, 0, 0), (sx, sy, sz, sz), 2)
-        pct = self.health / self.max_health
-        pygame.draw.rect(screen, (100, 0, 0), (sx, sy - 10 * camera.zoom, sz, 5))
-        pygame.draw.rect(screen, (0, 255, 0), (sx, sy - 10 * camera.zoom, sz * pct, 5))
+        color = (255, 200, 200) if self.hit_timer > 0 else (255, 0, 0)
+        pygame.draw.rect(screen, color, (sx, sy, self.size, self.size))
+        pygame.draw.rect(screen, (0, 0, 0), (sx, sy, self.size, self.size), 2)
+        bar_w = int(self.size * (self.health / 3))
+        pygame.draw.rect(screen, (100, 0, 0), (sx, sy - 10, self.size, 5))
+        pygame.draw.rect(screen, (0, 255, 0), (sx, sy - 10, bar_w, 5))
 
 
 class EnemyManager:
@@ -58,16 +61,18 @@ class EnemyManager:
     def add_enemy(self, x, y, enemy_type="static"):
         self.enemies.append(Enemy(x, y, enemy_type))
 
-    def update(self, player_bullets, world_width):
+    def update(self, px, py, bullets, world_width):
         for e in self.enemies[:]:
-            e.update(world_width)
+            e.update(px, py, world_width)
             if not e.alive:
                 self.enemies.remove(e)
+
         for e in self.enemies:
-            for b in player_bullets[:]:
-                if e.get_rect().colliderect(b.get_rect()):
+            for bullet in bullets[:]:
+                bullet_rect = pygame.Rect(bullet[0], bullet[1], 10, 4)
+                if e.get_rect().colliderect(bullet_rect):
                     e.take_damage()
-                    player_bullets.remove(b)
+                    bullets.remove(bullet)
                     break
 
     def check_player_hit(self, player_rect):
@@ -81,7 +86,7 @@ class EnemyManager:
             e.draw(screen, camera)
 
     def reset(self):
-        self.enemies.clear()
+        self.enemies = []
 
 
 class Goomba:
@@ -92,17 +97,19 @@ class Goomba:
         self.alive = True
         self.speed = 2
         self.direction = 1
-        self.y_velocity = 0
-        self.gravity = 0.6
+        self.vel_y = 0
 
     def update(self, platforms, world_width):
         if not self.alive:
             return
+
         self.x += self.speed * self.direction
-        self.y_velocity += self.gravity
-        self.y += self.y_velocity
+        self.vel_y += 0.6
+        self.y += self.vel_y
+
         if self.x <= 0 or self.x >= world_width - self.size:
             self.direction *= -1
+
         grect = pygame.Rect(self.x, self.y, self.size, self.size)
         for rect, tile_type in platforms:
             if not grect.colliderect(rect):
@@ -112,9 +119,9 @@ class Goomba:
             overlap_top = (self.y + self.size) - rect.top
             overlap_bottom = rect.bottom - self.y
             min_o = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
-            if min_o == overlap_top and self.y_velocity >= 0:
+            if min_o == overlap_top and self.vel_y >= 0:
                 self.y = rect.top - self.size
-                self.y_velocity = 0
+                self.vel_y = 0
             elif min_o == overlap_left or min_o == overlap_right:
                 self.direction *= -1
 
@@ -132,9 +139,8 @@ class Goomba:
         if not self.alive:
             return
         sx, sy = camera.apply(self.x, self.y)
-        sz = self.size * camera.zoom
-        pygame.draw.rect(screen, (139, 90, 43), (sx, sy, sz, sz))
-        pygame.draw.rect(screen, (0, 0, 0), (sx, sy, sz, sz), 2)
+        pygame.draw.rect(screen, (139, 90, 43), (sx, sy, self.size, self.size))
+        pygame.draw.rect(screen, (0, 0, 0), (sx, sy, self.size, self.size), 2)
 
 
 class GoombaManager:
@@ -162,4 +168,4 @@ class GoombaManager:
             g.draw(screen, camera)
 
     def reset(self):
-        self.goombas.clear()
+        self.goombas = []

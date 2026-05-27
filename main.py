@@ -11,21 +11,17 @@ from Moduler.kart import Map
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
+WIDTH = 800
+HEIGHT = 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Gravity Square")
 clock = pygame.time.Clock()
-
-def get_scaled_font(base_size):
-    scale = min(WIDTH / 600, HEIGHT / 400)
-    return pygame.font.SysFont(None, int(base_size * scale))
-
-WHITE = (255, 255, 255)
+font = pygame.font.SysFont(None, 30)
 
 game_state = "menu"
+player_health = 100
 
 game_map = Map()
-menu = Menu(WIDTH, HEIGHT)
 world = World(game_map)
 camera = Camera(WIDTH, HEIGHT)
 player = Player(game_map.world_width // 2 - 20, game_map.ground_y - 40)
@@ -33,9 +29,7 @@ gun = Gun()
 pickup_manager = PickupManager()
 enemy_manager = EnemyManager()
 goomba_manager = GoombaManager()
-
-player_health = 100
-player_max_health = 100
+menu = Menu(WIDTH, HEIGHT)
 
 def setup_level():
     pickup_manager.reset()
@@ -52,33 +46,13 @@ def setup_level():
     enemy_manager.add_enemy(900, world.ground_y - 40, "static")
     enemy_manager.add_enemy(1600, world.ground_y - 40, "moving")
 
-def draw_ui(screen, player, gun):
-    small_font = get_scaled_font(24)
-    ui_scale = min(WIDTH / 600, HEIGHT / 400)
-
-    health_bar_width = int(200 * ui_scale)
-    health_bar_height = int(20 * ui_scale)
-    health_x = WIDTH // 2 - health_bar_width // 2
-    health_y = int(10 * ui_scale)
-    health_percentage = player_health / player_max_health
-
-    pygame.draw.rect(screen, (100, 0, 0), (health_x, health_y, health_bar_width, health_bar_height))
-    pygame.draw.rect(screen, (0, 255, 0), (health_x, health_y, int(health_bar_width * health_percentage), health_bar_height))
-    pygame.draw.rect(screen, WHITE, (health_x, health_y, health_bar_width, health_bar_height), 2)
-
-    health_text = small_font.render(f"HP: {player_health}/{player_max_health}", True, WHITE)
-    screen.blit(health_text, health_text.get_rect(center=(health_x + health_bar_width // 2, health_y + health_bar_height // 2)))
-
-    right_x = WIDTH - int(100 * ui_scale)
+def draw_ui():
+    pygame.draw.rect(screen, (100, 0, 0), (300, 10, 200, 20))
+    pygame.draw.rect(screen, (0, 255, 0), (300, 10, player_health * 2, 20))
+    pygame.draw.rect(screen, (255, 255, 255), (300, 10, 200, 20), 2)
+    screen.blit(font.render(f"HP: {player_health}", True, (255, 255, 255)), (310, 12))
     if gun.has_gun:
-        screen.blit(small_font.render("GUN: YES", True, (255, 100, 100)), (right_x, int(90 * ui_scale)))
-        screen.blit(small_font.render(f"AIM: {player.get_shoot_direction().upper()}", True, (200, 200, 200)), (right_x, int(110 * ui_scale)))
-        if gun.unlimited_ammo:
-            ammo_text = small_font.render("AMMO: ∞", True, WHITE)
-        else:
-            ammo_color = WHITE if gun.ammo > 5 else (255, 0, 0)
-            ammo_text = small_font.render(f"AMMO: {gun.ammo}", True, ammo_color)
-        screen.blit(ammo_text, (right_x, int(130 * ui_scale)))
+        screen.blit(font.render(f"AMMO: {gun.ammo}", True, (255, 255, 255)), (10, 10))
 
 running = True
 while running:
@@ -99,20 +73,16 @@ while running:
                 running = False
             elif action == "play":
                 game_state = "game"
+                player_health = 100
                 player.reset(game_map.world_width // 2 - 20, game_map.ground_y - 40)
                 camera.reset()
                 gun.reset()
-                player_health = player_max_health
                 setup_level()
-            elif action == "options":
-                print("Options not implemented yet")
 
         elif game_state == "game":
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 gun.shoot(player.x, player.y, player.size, player.get_shoot_direction())
-
             player.handle_input(event)
-
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 game_state = "menu"
                 menu.reset_animations()
@@ -128,9 +98,9 @@ while running:
             game_state = "menu"
             menu.reset_animations()
 
-        goomba_result = goomba_manager.check_player_collision(player.x, player.y, player.size, player.y_velocity)
+        goomba_result = goomba_manager.check_player_collision(player.x, player.y, player.size, player.vel_y)
         if goomba_result == "stomp":
-            player.y_velocity = -10
+            player.vel_y = -10
         elif goomba_result == "hurt":
             game_state = "menu"
             menu.reset_animations()
@@ -139,7 +109,7 @@ while running:
         gun.update(world.width, world.height, world.ground_y)
         pickup_manager.update(player.x, player.y, player.size, gun)
         goomba_manager.update(game_map.get_platforms(), world.width)
-        enemy_manager.update(gun.bullets, world.width)
+        enemy_manager.update(player.x, player.y, gun.bullets, world.width)
 
         if enemy_manager.check_player_hit(pygame.Rect(player.x, player.y, player.size, player.size)):
             player_health -= 10
@@ -153,7 +123,7 @@ while running:
         enemy_manager.draw(screen, camera)
         player.draw(screen, camera)
         gun.draw(screen, camera)
-        draw_ui(screen, player, gun)
+        draw_ui()
 
     pygame.display.flip()
     clock.tick(60)
