@@ -2,170 +2,171 @@ import pygame
 import math
 
 
-class Enemy:
-    def __init__(self, x, y, enemy_type="static"):
+
+class Fiende:
+    def __init__(self, x, y, sort="stille"):
         self.x = x
         self.y = y
-        self.size = 40
-        self.type = enemy_type
-        self.health = 3
-        self.alive = True
-        self.hit_timer = 0
-        self.speed = 2
-        self.direction = 1
-        self.patrol_left = x - 150
-        self.patrol_right = x + 150
+        self.storrelse = 40
+        self.sort = sort
+        self.liv = 3
+        self.lever = True
+        self.treff_teller = 0
+        self.fart = 2
+        self.retning = 1
+        self.patrulje_venstre = x - 150
+        self.patrulje_hoyre = x + 150
 
-    def take_damage(self):
-        self.health -= 1
-        self.hit_timer = 10
-        if self.health <= 0:
-            self.alive = False
+    def ta_skade(self):
+        self.liv -= 1
+        self.treff_teller = 10
+        if self.liv <= 0:
+            self.lever = False
 
-    def update(self, px, py, world_width):
-        if not self.alive:
+    def oppdater(self, sx, sy, verden_bredde):
+        if not self.lever:
             return
-        if self.hit_timer > 0:
-            self.hit_timer -= 1
+        if self.treff_teller > 0:
+            self.treff_teller -= 1
 
-        dist = math.sqrt((px - self.x) ** 2 + (py - self.y) ** 2)
-        if dist < 400:
-            if px < self.x:
-                self.x -= self.speed
-            elif px > self.x:
-                self.x += self.speed
-        elif self.type == "moving":
-            self.x += self.speed * self.direction
-            if self.x <= self.patrol_left or self.x >= self.patrol_right:
-                self.direction *= -1
+        avstand = math.sqrt((sx - self.x) ** 2 + (sy - self.y) ** 2)
+        if avstand < 400:
+            if sx < self.x:
+                self.x -= self.fart
+            elif sx > self.x:
+                self.x += self.fart
+        elif self.sort == "bevegelig":
+            self.x += self.fart * self.retning
+            if self.x <= self.patrulje_venstre or self.x >= self.patrulje_hoyre:
+                self.retning *= -1
 
-    def get_rect(self):
-        return pygame.Rect(self.x, self.y, self.size, self.size)
+    def hent_boks(self):
+        return pygame.Rect(self.x, self.y, self.storrelse, self.storrelse)
 
-    def draw(self, screen, camera):
-        if not self.alive:
+    def tegn(self, skjerm, kamera):
+        if not self.lever:
             return
-        sx, sy = camera.apply(self.x, self.y)
-        color = (255, 200, 200) if self.hit_timer > 0 else (255, 0, 0)
-        pygame.draw.rect(screen, color, (sx, sy, self.size, self.size))
-        pygame.draw.rect(screen, (0, 0, 0), (sx, sy, self.size, self.size), 2)
-        bar_w = int(self.size * (self.health / 3))
-        pygame.draw.rect(screen, (100, 0, 0), (sx, sy - 10, self.size, 5))
-        pygame.draw.rect(screen, (0, 255, 0), (sx, sy - 10, bar_w, 5))
+        sx, sy = kamera.bruk(self.x, self.y)
+        farge = (255, 200, 200) if self.treff_teller > 0 else (255, 0, 0)
+        pygame.draw.rect(skjerm, farge, (sx, sy, self.storrelse, self.storrelse))
+        pygame.draw.rect(skjerm, (0, 0, 0), (sx, sy, self.storrelse, self.storrelse), 2)
+        liv_bredde = int(self.storrelse * (self.liv / 3))
+        pygame.draw.rect(skjerm, (100, 0, 0), (sx, sy - 10, self.storrelse, 5))
+        pygame.draw.rect(skjerm, (0, 255, 0), (sx, sy - 10, liv_bredde, 5))
 
 
-class EnemyManager:
+class FiendeStyrer:
     def __init__(self):
-        self.enemies = []
+        self.fiender = []
 
-    def add_enemy(self, x, y, enemy_type="static"):
-        self.enemies.append(Enemy(x, y, enemy_type))
+    def legg_til_fiende(self, x, y, sort="stille"):
+        self.fiender.append(Fiende(x, y, sort))
 
-    def update(self, px, py, bullets, world_width):
-        for e in self.enemies[:]:
-            e.update(px, py, world_width)
-            if not e.alive:
-                self.enemies.remove(e)
+    def oppdater(self, sx, sy, kuler, verden_bredde):
+        for f in self.fiender[:]:
+            f.oppdater(sx, sy, verden_bredde)
+            if not f.lever:
+                self.fiender.remove(f)
 
-        for e in self.enemies:
-            for bullet in bullets[:]:
-                bullet_rect = pygame.Rect(bullet[0], bullet[1], 10, 4)
-                if e.get_rect().colliderect(bullet_rect):
-                    e.take_damage()
-                    bullets.remove(bullet)
+        for f in self.fiender:
+            for kule in kuler[:]:
+                kule_boks = pygame.Rect(kule[0], kule[1], 10, 4)
+                if f.hent_boks().colliderect(kule_boks):
+                    f.ta_skade()
+                    kuler.remove(kule)
                     break
 
-    def check_player_hit(self, player_rect):
-        for e in self.enemies:
-            if e.alive and e.get_rect().colliderect(player_rect):
+    def sjekk_spiller_treff(self, spiller_boks):
+        for f in self.fiender:
+            if f.lever and f.hent_boks().colliderect(spiller_boks):
                 return True
         return False
 
-    def draw(self, screen, camera):
-        for e in self.enemies:
-            e.draw(screen, camera)
+    def tegn(self, skjerm, kamera):
+        for f in self.fiender:
+            f.tegn(skjerm, kamera)
 
-    def reset(self):
-        self.enemies = []
+    def nullstill(self):
+        self.fiender = []
 
 
 class Goomba:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.size = 40
-        self.alive = True
-        self.speed = 2
-        self.direction = 1
-        self.vel_y = 0
+        self.storrelse = 40
+        self.lever = True
+        self.fart = 2
+        self.retning = 1
+        self.fart_y = 0
 
-    def update(self, platforms, world_width):
-        if not self.alive:
+    def oppdater(self, plattformer, verden_bredde):
+        if not self.lever:
             return
 
-        self.x += self.speed * self.direction
-        self.vel_y += 0.6
-        self.y += self.vel_y
+        self.x += self.fart * self.retning
+        self.fart_y += 0.6
+        self.y += self.fart_y
 
-        if self.x <= 0 or self.x >= world_width - self.size:
-            self.direction *= -1
+        if self.x <= 0 or self.x >= verden_bredde - self.storrelse:
+            self.retning *= -1
 
-        grect = pygame.Rect(self.x, self.y, self.size, self.size)
-        for rect, tile_type in platforms:
-            if not grect.colliderect(rect):
+        g_boks = pygame.Rect(self.x, self.y, self.storrelse, self.storrelse)
+        for boks, flis_type in plattformer:
+            if not g_boks.colliderect(boks):
                 continue
-            overlap_left = (self.x + self.size) - rect.left
-            overlap_right = rect.right - self.x
-            overlap_top = (self.y + self.size) - rect.top
-            overlap_bottom = rect.bottom - self.y
-            min_o = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
-            if min_o == overlap_top and self.vel_y >= 0:
-                self.y = rect.top - self.size
-                self.vel_y = 0
-            elif min_o == overlap_left or min_o == overlap_right:
-                self.direction *= -1
+            overlapp_venstre = (self.x + self.storrelse) - boks.left
+            overlapp_hoyre = boks.right - self.x
+            overlapp_topp = (self.y + self.storrelse) - boks.top
+            overlapp_bunn = boks.bottom - self.y
+            minst = min(overlapp_venstre, overlapp_hoyre, overlapp_topp, overlapp_bunn)
+            if minst == overlapp_topp and self.fart_y >= 0:
+                self.y = boks.top - self.storrelse
+                self.fart_y = 0
+            elif minst == overlapp_venstre or minst == overlapp_hoyre:
+                self.retning *= -1
 
-    def check_player_collision(self, px, py, psize, py_vel):
-        if not self.alive:
+    def sjekk_spiller_kollisjon(self, sx, sy, s_storrelse, s_fart_y):
+        if not self.lever:
             return None
-        if not pygame.Rect(px, py, psize, psize).colliderect(pygame.Rect(self.x, self.y, self.size, self.size)):
+        if not pygame.Rect(sx, sy, s_storrelse, s_storrelse).colliderect(pygame.Rect(self.x, self.y, self.storrelse, self.storrelse)):
             return None
-        if py_vel > 0 and py + psize - py_vel <= self.y + 10:
-            self.alive = False
-            return "stomp"
-        return "hurt"
+        if s_fart_y > 0 and sy + s_storrelse - s_fart_y <= self.y + 10:
+            self.lever = False
+            return "trakk"
+        return "skadet"
 
-    def draw(self, screen, camera):
-        if not self.alive:
+    def tegn(self, skjerm, kamera):
+        if not self.lever:
             return
-        sx, sy = camera.apply(self.x, self.y)
-        pygame.draw.rect(screen, (139, 90, 43), (sx, sy, self.size, self.size))
-        pygame.draw.rect(screen, (0, 0, 0), (sx, sy, self.size, self.size), 2)
+        sx, sy = kamera.bruk(self.x, self.y)
+        pygame.draw.rect(skjerm, (139, 90, 43), (sx, sy, self.storrelse, self.storrelse))
+        pygame.draw.rect(skjerm, (0, 0, 0), (sx, sy, self.storrelse, self.storrelse), 2)
 
 
-class GoombaManager:
+class GoombaStyrer:
     def __init__(self):
         self.goombas = []
 
-    def add_goomba(self, x, y):
+    def legg_til_goomba(self, x, y):
         self.goombas.append(Goomba(x, y))
 
-    def update(self, platforms, world_width):
+    def oppdater(self, plattformer, verden_bredde):
         for g in self.goombas[:]:
-            g.update(platforms, world_width)
-            if not g.alive:
+            g.oppdater(plattformer, verden_bredde)
+            if not g.lever:
                 self.goombas.remove(g)
 
-    def check_player_collision(self, px, py, psize, py_vel):
+    def sjekk_spiller_kollisjon(self, sx, sy, s_storrelse, s_fart_y):
         for g in self.goombas:
-            result = g.check_player_collision(px, py, psize, py_vel)
-            if result:
-                return result
+            resultat = g.sjekk_spiller_kollisjon(sx, sy, s_storrelse, s_fart_y)
+            if resultat:
+                return resultat
         return None
 
-    def draw(self, screen, camera):
+    def tegn(self, skjerm, kamera):
         for g in self.goombas:
-            g.draw(screen, camera)
+            g.tegn(skjerm, kamera)
 
-    def reset(self):
+    def nullstill(self):
         self.goombas = []

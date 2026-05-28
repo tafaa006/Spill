@@ -1,46 +1,46 @@
 import pygame
 
-class Pickup:
-    def __init__(self, x, y, pickup_type):
+class Gjenstand:
+    def __init__(self, x, y, sort):
         self.x = x
         self.y = y
-        self.size = 30
-        self.type = pickup_type
-        self.collected = False
-        self.color = (255, 100, 100)
+        self.storrelse = 30
+        self.sort = sort
+        self.plukket = False
+        self.farge = (255, 100, 100)
 
-    def check_collision(self, px, py, psize):
-        if self.collected:
+    def sjekk_kollisjon(self, sx, sy, s_storrelse):
+        if self.plukket:
             return False
-        if pygame.Rect(self.x, self.y, self.size, self.size).colliderect(pygame.Rect(px, py, psize, psize)):
-            self.collected = True
+        if pygame.Rect(self.x, self.y, self.storrelse, self.storrelse).colliderect(pygame.Rect(sx, sy, s_storrelse, s_storrelse)):
+            self.plukket = True
             return True
         return False
 
-    def draw(self, screen, camera):
-        if self.collected:
+    def tegn(self, skjerm, kamera):
+        if self.plukket:
             return
-        sx, sy = camera.apply(self.x, self.y)
-        pygame.draw.rect(screen, self.color, (sx, sy, self.size, self.size))
+        sx, sy = kamera.bruk(self.x, self.y)
+        pygame.draw.rect(skjerm, self.farge, (sx, sy, self.storrelse, self.storrelse))
 
 
-class PickupManager:
+class GjenstandStyrer:
     def __init__(self):
-        self.pickups = []
+        self.gjenstander = []
 
-    def add_pickup(self, x, y, pickup_type):
-        self.pickups.append(Pickup(x, y, pickup_type))
+    def legg_til(self, x, y, sort):
+        self.gjenstander.append(Gjenstand(x, y, sort))
 
-    def update(self, px, py, psize, gun):
-        for pickup in self.pickups[:]:
-            if pickup.check_collision(px, py, psize):
-                if pickup.type == "gun":
-                    gun.pickup_gun()
-                self.pickups.remove(pickup)
+    def oppdater(self, sx, sy, s_storrelse, pistol):
+        for gjenstand in self.gjenstander[:]:
+            if gjenstand.sjekk_kollisjon(sx, sy, s_storrelse):
+                if gjenstand.sort == "pistol":
+                    pistol.plukk_pistol()
+                self.gjenstander.remove(gjenstand)
 
-    def draw(self, screen, camera):
-        for p in self.pickups:
-            p.draw(screen, camera)
+    def tegn(self, skjerm, kamera):
+        for g in self.gjenstander:
+            g.tegn(skjerm, kamera)
 
-    def reset(self):
-        self.pickups = []
+    def nullstill(self):
+        self.gjenstander = []

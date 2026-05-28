@@ -1,13 +1,13 @@
 import pygame
 
-class Map:
-    TILE_W = 80
-    TILE_H = 80
+class Kart:
+    FLIS_BREDDE = 80
+    FLIS_HOYDE = 80
 
-    maze = [
+    labyrint = [
         "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
         "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
-        "10000000000000000000000000000000000000000000000000000000000000000000000001111001",
+        "11111111111111111111111111111111111111111111111111111111111111111111111111111001",
         "10000000000000000000000000000000000000000000000000000000000000000000000000000011",
         "10000000000000000000000000000000000000000000000000000000000000000000000000000001",
         "10000000000000000000000000000000000000000000000000000000000000000000000000000011",
@@ -27,36 +27,35 @@ class Map:
         "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
     ]
 
-    TILE_COLORS = {"1": (200, 200, 200), "2": (220, 60, 60)}
-    OVERLAY_COLORS = {"1": (200, 200, 200), "2": (220, 60, 60), "0": (50, 50, 50)}
+    FLIS_FARGER = {"1": (200, 200, 200), "2": (220, 60, 60)}
 
     def __init__(self):
-        self.rows = len(self.maze)
-        self.cols = len(self.maze[0])
-        self.world_width = self.cols * self.TILE_W
-        self.world_height = self.rows * self.TILE_H
-        self.ground_y = self._find_ground_y()
-        self._platforms = self._build_platforms()
+        self.rader = len(self.labyrint)
+        self.kolonner = len(self.labyrint[0])
+        self.verden_bredde = self.kolonner * self.FLIS_BREDDE
+        self.verden_hoyde = self.rader * self.FLIS_HOYDE
+        self.bakke_y = self._finn_bakke_y()
+        self._plattformer = self._bygg_plattformer()
 
-    def _find_ground_y(self):
-        for row in range(self.rows - 1, -1, -1):
-            if self.maze[row][1] == "0":
-                return (row + 1) * self.TILE_H
-        return (self.rows - 1) * self.TILE_H
+    def _finn_bakke_y(self):
+        for rad in range(self.rader - 1, -1, -1):
+            if self.labyrint[rad][1] == "0":
+                return (rad + 1) * self.FLIS_HOYDE
+        return (self.rader - 1) * self.FLIS_HOYDE
 
-    def _build_platforms(self):
-        platforms = []
-        for row in range(self.rows):
-            for col in range(self.cols):
-                t = self.maze[row][col]
-                if t in self.TILE_COLORS:
-                    rect = pygame.Rect(col * self.TILE_W, row * self.TILE_H, self.TILE_W, self.TILE_H)
-                    platforms.append((rect, t))
-        return platforms
+    def _bygg_plattformer(self):
+        plattformer = []
+        for rad in range(self.rader):
+            for kol in range(self.kolonner):
+                t = self.labyrint[rad][kol]
+                if t in self.FLIS_FARGER:
+                    boks = pygame.Rect(kol * self.FLIS_BREDDE, rad * self.FLIS_HOYDE, self.FLIS_BREDDE, self.FLIS_HOYDE)
+                    plattformer.append((boks, t))
+        return plattformer
 
-    def get_platforms(self):
-        return self._platforms
+    def hent_plattformer(self):
+        return self._plattformer
 
-    def draw_world(self, screen, camera):
-        for rect, tile_type in self._platforms:
-            pygame.draw.rect(screen, self.TILE_COLORS[tile_type], camera.apply_rect(rect))
+    def tegn_verden(self, skjerm, kamera):
+        for boks, flis_type in self._plattformer:
+            pygame.draw.rect(skjerm, self.FLIS_FARGER[flis_type], kamera.bruk_boks(boks))

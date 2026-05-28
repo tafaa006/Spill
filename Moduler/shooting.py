@@ -1,63 +1,56 @@
 import pygame
 
-bullet_width = 10
-bullet_height = 4
-bullet_speed = 8
+kule_bredde = 10
+kule_hoyde = 4
+kule_fart = 12
 
-
-class Gun:
+class Pistol:
     def __init__(self):
-        self.has_gun = False
-        self.bullets = []
-        self.fire_cooldown = 0
-        self.ammo = 50
+        self.har_pistol = False
+        self.kuler = []
+        self.skyte_ventetid = 0
+        self.patroner = 50
 
-    def pickup_gun(self):
-        self.has_gun = True
-        self.ammo = 50
+    def plukk_pistol(self):
+        self.har_pistol = True
+        self.patroner = 50
 
-    def shoot(self, px, py, psize, direction):
-        if not self.has_gun or self.fire_cooldown > 0 or self.ammo <= 0:
+    def skyt(self, sx, sy, storrelse, retning):
+        if not self.har_pistol or self.skyte_ventetid > 0 or self.patroner <= 0:
             return
 
-        bx = px + psize // 2
-        by = py + psize // 2
+        kx = sx + storrelse // 2
+        ky = sy + storrelse // 2
 
-        if direction == "left":
-            self.bullets.append([bx, by, -bullet_speed, 0])
-        elif direction == "right":
-            self.bullets.append([bx, by, bullet_speed, 0])
-        elif direction == "up":
-            self.bullets.append([bx, by, 0, -bullet_speed])
-        elif direction == "down":
-            self.bullets.append([bx, by, 0, bullet_speed])
+        if retning == "venstre":
+            self.kuler.append([kx, ky, -kule_fart, 0])
+        elif retning == "hoyre":
+            self.kuler.append([kx, ky, kule_fart, 0])
+        elif retning == "opp":
+            self.kuler.append([kx, ky, 0, -kule_fart])
+        elif retning == "ned":
+            self.kuler.append([kx, ky, 0, kule_fart])
 
-        self.fire_cooldown = 15
-        self.ammo -= 1
+        self.skyte_ventetid = 15
+        self.patroner -= 1
 
-    def update(self, world_width, world_height, ground_y):
-        if self.fire_cooldown > 0:
-            self.fire_cooldown -= 1
+    def oppdater(self, verden_bredde, verden_hoyde, bakke_y):
+        if self.skyte_ventetid > 0:
+            self.skyte_ventetid -= 1
 
-        for bullet in self.bullets[:]:
-            bullet[0] += bullet[2]
-            bullet[1] += bullet[3]
-            if bullet[0] < 0 or bullet[0] > world_width or bullet[1] < 0 or bullet[1] > ground_y:
-                self.bullets.remove(bullet)
+        for kule in self.kuler[:]:
+            kule[0] += kule[2]
+            kule[1] += kule[3]
+            if kule[0] < 0 or kule[0] > verden_bredde or kule[1] < 0 or kule[1] > bakke_y:
+                self.kuler.remove(kule)
 
-    def get_bullet_rects(self):
-        rects = []
-        for bullet in self.bullets:
-            rects.append((pygame.Rect(bullet[0], bullet[1], bullet_width, bullet_height), bullet))
-        return rects
+    def tegn(self, skjerm, kamera):
+        for kule in self.kuler:
+            sx, sy = kamera.bruk(kule[0], kule[1])
+            pygame.draw.rect(skjerm, (255, 255, 0), (sx, sy, kule_bredde, kule_hoyde))
 
-    def draw(self, screen, camera):
-        for bullet in self.bullets:
-            sx, sy = camera.apply(bullet[0], bullet[1])
-            pygame.draw.rect(screen, (255, 255, 0), (sx, sy, bullet_width, bullet_height))
-
-    def reset(self):
-        self.has_gun = False
-        self.bullets = []
-        self.fire_cooldown = 0
-        self.ammo = 50
+    def nullstill(self):
+        self.har_pistol = False
+        self.kuler = []
+        self.skyte_ventetid = 0
+        self.patroner = 50

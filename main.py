@@ -1,132 +1,135 @@
 import pygame
 import sys
-from Moduler.player import Player
-from Moduler.camera import Camera
-from Moduler.world import World
-from Moduler.menu import Menu
-from Moduler.shooting import Gun
-from Moduler.pickups import PickupManager
-from Moduler.enemies import EnemyManager, GoombaManager
-from Moduler.kart import Map
+from Moduler.player import Spiller
+from Moduler.camera import Kamera
+from Moduler.world import Verden
+from Moduler.menu import Meny
+from Moduler.shooting import Pistol
+from Moduler.pickups import GjenstandStyrer
+from Moduler.enemies import FiendeStyrer, GoombaStyrer
+from Moduler.kart import Kart
 
 pygame.init()
 
-WIDTH = 800
-HEIGHT = 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+BREDDE = 800
+HOYDE = 600
+skjerm = pygame.display.set_mode((BREDDE, HOYDE), pygame.RESIZABLE)
 pygame.display.set_caption("Gravity Square")
-clock = pygame.time.Clock()
-font = pygame.font.SysFont(None, 30)
+klokke = pygame.time.Clock()
+skrift = pygame.font.SysFont(None, 30)
 
-game_state = "menu"
-player_health = 100
+spill_tilstand = "meny"
+spiller_liv = 100
+drap = 0
 
-game_map = Map()
-world = World(game_map)
-camera = Camera(WIDTH, HEIGHT)
-player = Player(game_map.world_width // 2 - 20, game_map.ground_y - 40)
-gun = Gun()
-pickup_manager = PickupManager()
-enemy_manager = EnemyManager()
-goomba_manager = GoombaManager()
-menu = Menu(WIDTH, HEIGHT)
+kart = Kart()
+verden = Verden(kart)
+kamera = Kamera(BREDDE, HOYDE)
+spiller = Spiller(kart.verden_bredde // 2 - 20, kart.bakke_y - 40)
+pistol = Pistol()
+gjenstand_styrer = GjenstandStyrer()
+fiende_styrer = FiendeStyrer()
+goomba_styrer = GoombaStyrer()
+meny = Meny(BREDDE, HOYDE)
 
-def setup_level():
-    pickup_manager.reset()
-    enemy_manager.reset()
-    goomba_manager.reset()
+def lag_brett():
+    gjenstand_styrer.nullstill()
+    fiende_styrer.nullstill()
+    goomba_styrer.nullstill()
 
-    pickup_manager.add_pickup(200, world.ground_y - 50, "gun")
+    gjenstand_styrer.legg_til(3600, verden.bakke_y - 50, "pistol")
 
-    goomba_manager.add_goomba(400, world.ground_y - 40)
-    goomba_manager.add_goomba(700, world.ground_y - 40)
-    goomba_manager.add_goomba(1100, world.ground_y - 40)
-    goomba_manager.add_goomba(1500, world.ground_y - 40)
+    goomba_styrer.legg_til_goomba(400, verden.bakke_y - 40)
+    goomba_styrer.legg_til_goomba(700, verden.bakke_y - 40)
+    goomba_styrer.legg_til_goomba(1100, verden.bakke_y - 40)
+    goomba_styrer.legg_til_goomba(1500, verden.bakke_y - 40)
 
-    enemy_manager.add_enemy(900, world.ground_y - 40, "static")
-    enemy_manager.add_enemy(1600, world.ground_y - 40, "moving")
+    fiende_styrer.legg_til_fiende(900, verden.bakke_y - 40, "stille")
+    fiende_styrer.legg_til_fiende(1600, verden.bakke_y - 40, "bevegelig")
 
-def draw_ui():
-    pygame.draw.rect(screen, (100, 0, 0), (300, 10, 200, 20))
-    pygame.draw.rect(screen, (0, 255, 0), (300, 10, player_health * 2, 20))
-    pygame.draw.rect(screen, (255, 255, 255), (300, 10, 200, 20), 2)
-    screen.blit(font.render(f"HP: {player_health}", True, (255, 255, 255)), (310, 12))
-    if gun.has_gun:
-        screen.blit(font.render(f"AMMO: {gun.ammo}", True, (255, 255, 255)), (10, 10))
+def tegn_ui():
+    pygame.draw.rect(skjerm, (100, 0, 0), (300, 10, 200, 20))
+    pygame.draw.rect(skjerm, (0, 255, 0), (300, 10, spiller_liv * 2, 20))
+    pygame.draw.rect(skjerm, (255, 255, 255), (300, 10, 200, 20), 2)
+    skjerm.blit(skrift.render(f"Liv: {spiller_liv}", True, (255, 255, 255)), (310, 12))
+    skjerm.blit(skrift.render(f"drap: {drap}", True, (255, 255, 255)), (10, 40))
+    if pistol.har_pistol:
+        skjerm.blit(skrift.render(f"Patroner: {pistol.patroner}", True, (255, 255, 255)), (10, 10))
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+kjorer = True
+while kjorer:
+    for hendelse in pygame.event.get():
+        if hendelse.type == pygame.QUIT:
+            kjorer = False
 
-        if event.type == pygame.VIDEORESIZE:
-            WIDTH, HEIGHT = event.w, event.h
-            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-            menu.update_resolution(WIDTH, HEIGHT)
-            camera.screen_width = WIDTH
-            camera.screen_height = HEIGHT
+        if hendelse.type == pygame.VIDEORESIZE:
+            BREDDE, HOYDE = hendelse.w, hendelse.h
+            skjerm = pygame.display.set_mode((BREDDE, HOYDE), pygame.RESIZABLE)
+            meny.oppdater_storrelse(BREDDE, HOYDE)
+            kamera.skjerm_bredde = BREDDE
+            kamera.skjerm_hoyde = HOYDE
 
-        if game_state == "menu":
-            action = menu.handle_event(event)
-            if action == "quit":
-                running = False
-            elif action == "play":
-                game_state = "game"
-                player_health = 100
-                player.reset(game_map.world_width // 2 - 20, game_map.ground_y - 40)
-                camera.reset()
-                gun.reset()
-                setup_level()
+        if spill_tilstand == "meny":
+            handling = meny.les_hendelse(hendelse)
+            if handling == "avslutt":
+                kjorer = False
+            elif handling == "spill":
+                spill_tilstand = "spill"
+                spiller_liv = 100
+                spiller.nullstill(kart.verden_bredde // 2 - 20, kart.bakke_y - 40)
+                kamera.nullstill()
+                pistol.nullstill()
+                lag_brett()
 
-        elif game_state == "game":
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                gun.shoot(player.x, player.y, player.size, player.get_shoot_direction())
-            player.handle_input(event)
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                game_state = "menu"
-                menu.reset_animations()
+        elif spill_tilstand == "spill":
+            if hendelse.type == pygame.KEYDOWN and hendelse.key == pygame.K_SPACE:
+                pistol.skyt(spiller.x, spiller.y, spiller.storrelse, spiller.skyte_retning())
+            spiller.les_input(hendelse)
+            if hendelse.type == pygame.KEYDOWN and hendelse.key == pygame.K_ESCAPE:
+                spill_tilstand = "meny"
+                meny.nullstill()
 
-    if game_state == "menu":
-        menu.update()
-        menu.draw(screen)
+    if spill_tilstand == "meny":
+        meny.oppdater()
+        meny.tegn(skjerm)
 
-    elif game_state == "game":
-        player.update(world.width)
+    elif spill_tilstand == "spill":
+        spiller.oppdater(verden.bredde)
 
-        if player.check_platform_collision(game_map.get_platforms()):
-            game_state = "menu"
-            menu.reset_animations()
+        if spiller.sjekk_kollisjon(kart.hent_plattformer()):
+            spill_tilstand = "meny"
+            meny.nullstill()
 
-        goomba_result = goomba_manager.check_player_collision(player.x, player.y, player.size, player.vel_y)
-        if goomba_result == "stomp":
-            player.vel_y = -10
-        elif goomba_result == "hurt":
-            game_state = "menu"
-            menu.reset_animations()
+        goomba_resultat = goomba_styrer.sjekk_spiller_kollisjon(spiller.x, spiller.y, spiller.storrelse, spiller.fart_y)
+        if goomba_resultat == "trakk":
+            spiller.fart_y = -10
+            drap += 1
+        elif goomba_resultat == "skadet":
+            spill_tilstand = "meny"
+            meny.nullstill()
 
-        camera.update(player.x + player.size // 2, player.y + player.size // 2)
-        gun.update(world.width, world.height, world.ground_y)
-        pickup_manager.update(player.x, player.y, player.size, gun)
-        goomba_manager.update(game_map.get_platforms(), world.width)
-        enemy_manager.update(player.x, player.y, gun.bullets, world.width)
+        kamera.oppdater(spiller.x + spiller.storrelse // 2, spiller.y + spiller.storrelse // 2)
+        pistol.oppdater(verden.bredde, verden.hoyde, verden.bakke_y)
+        gjenstand_styrer.oppdater(spiller.x, spiller.y, spiller.storrelse, pistol)
+        goomba_styrer.oppdater(kart.hent_plattformer(), verden.bredde)
+        fiende_styrer.oppdater(spiller.x, spiller.y, pistol.kuler, verden.bredde)
 
-        if enemy_manager.check_player_hit(pygame.Rect(player.x, player.y, player.size, player.size)):
-            player_health -= 10
-            if player_health <= 0:
-                game_state = "menu"
-                menu.reset_animations()
+        if fiende_styrer.sjekk_spiller_treff(pygame.Rect(spiller.x, spiller.y, spiller.storrelse, spiller.storrelse)):
+            spiller_liv -= 10
+            if spiller_liv <= 0:
+                spill_tilstand = "meny"
+                meny.nullstill()
 
-        world.draw(screen, camera)
-        pickup_manager.draw(screen, camera)
-        goomba_manager.draw(screen, camera)
-        enemy_manager.draw(screen, camera)
-        player.draw(screen, camera)
-        gun.draw(screen, camera)
-        draw_ui()
+        verden.tegn(skjerm, kamera)
+        gjenstand_styrer.tegn(skjerm, kamera)
+        goomba_styrer.tegn(skjerm, kamera)
+        fiende_styrer.tegn(skjerm, kamera)
+        spiller.tegn(skjerm, kamera)
+        pistol.tegn(skjerm, kamera)
+        tegn_ui()
 
     pygame.display.flip()
-    clock.tick(60)
+    klokke.tick(60)
 
 pygame.quit()
 sys.exit()

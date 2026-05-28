@@ -1,96 +1,96 @@
 import pygame
 
-BG_COLOR = (30, 30, 30)
-BUTTON_COLOR = (70, 130, 180)
-HOVER_COLOR = (100, 170, 220)
-TEXT_COLOR = (255, 255, 255)
+BAKGRUNN_FARGE = (30, 30, 30)
+KNAPP_FARGE = (70, 130, 180)
+HOVER_FARGE = (100, 170, 220)
+TEKST_FARGE = (255, 255, 255)
 
-class Button:
-    def __init__(self, text, x, y, w, h):
-        self.text = text
-        self.rect = pygame.Rect(x, y, w, h)
+class Knapp:
+    def __init__(self, tekst, x, y, bredde, hoyde):
+        self.tekst = tekst
+        self.boks = pygame.Rect(x, y, bredde, hoyde)
 
-    def draw(self, surface, font):
-        color = HOVER_COLOR if self.rect.collidepoint(pygame.mouse.get_pos()) else BUTTON_COLOR
-        pygame.draw.rect(surface, color, self.rect)
-        pygame.draw.rect(surface, (0, 0, 0), self.rect, 2)
-        text_surf = font.render(self.text, True, TEXT_COLOR)
-        text_rect = text_surf.get_rect(center=self.rect.center)
-        surface.blit(text_surf, text_rect)
+    def tegn(self, flate, skrift):
+        farge = HOVER_FARGE if self.boks.collidepoint(pygame.mouse.get_pos()) else KNAPP_FARGE
+        pygame.draw.rect(flate, farge, self.boks)
+        pygame.draw.rect(flate, (0, 0, 0), self.boks, 2)
+        tekst_flate = skrift.render(self.tekst, True, TEKST_FARGE)
+        tekst_boks = tekst_flate.get_rect(center=self.boks.center)
+        flate.blit(tekst_flate, tekst_boks)
 
-    def clicked(self, event):
+    def klikket(self, hendelse):
         return (
-            event.type == pygame.MOUSEBUTTONDOWN
-            and event.button == 1
-            and self.rect.collidepoint(event.pos)
+            hendelse.type == pygame.MOUSEBUTTONDOWN
+            and hendelse.button == 1
+            and self.boks.collidepoint(hendelse.pos)
         )
 
 
-class Menu:
-    def __init__(self, screen_width, screen_height):
-        self.screen_width = screen_width
-        self.screen_height = screen_height
-        self.font = pygame.font.SysFont(None, 36)
+class Meny:
+    def __init__(self, skjerm_bredde, skjerm_hoyde):
+        self.skjerm_bredde = skjerm_bredde
+        self.skjerm_hoyde = skjerm_hoyde
+        self.skrift = pygame.font.SysFont(None, 36)
 
-        self.buttons = [
-            Button("Play",  screen_width // 2 - 100, 200, 200, 50),
-            Button("Quit",  screen_width // 2 - 100, 270, 200, 50),
+        self.knapper = [
+            Knapp("Spill", skjerm_bredde // 2 - 100, 200, 200, 50),
+            Knapp("Avslutt", skjerm_bredde // 2 - 100, 270, 200, 50),
         ]
 
-        self.title_image = None
+        self.tittel_bilde = None
         try:
-            self.title_image = pygame.image.load("Bilder/grafyx.png").convert_alpha()
+            self.tittel_bilde = pygame.image.load("Bilder/grafyx.png").convert_alpha()
         except:
             pass
 
-        self.music_playing = False
+        self.musikk_spilles = False
         try:
             pygame.mixer.music.load("LydEffekter/MenuLyd.mp3")
             pygame.mixer.music.play(-1)
             pygame.mixer.music.set_volume(0.5)
-            self.music_playing = True
+            self.musikk_spilles = True
         except:
             pass
 
-    def update_resolution(self, screen_width, screen_height):
-        self.screen_width = screen_width
-        self.screen_height = screen_height
-        self.buttons[0].rect = pygame.Rect(screen_width // 2 - 100, 200, 200, 50)
-        self.buttons[1].rect = pygame.Rect(screen_width // 2 - 100, 270, 200, 50)
+    def oppdater_storrelse(self, skjerm_bredde, skjerm_hoyde):
+        self.skjerm_bredde = skjerm_bredde
+        self.skjerm_hoyde = skjerm_hoyde
+        self.knapper[0].boks = pygame.Rect(skjerm_bredde // 2 - 100, 200, 200, 50)
+        self.knapper[1].boks = pygame.Rect(skjerm_bredde // 2 - 100, 270, 200, 50)
 
-    def handle_event(self, event):
-        for button in self.buttons:
-            if button.clicked(event):
-                if button.text == "Play":
-                    if self.music_playing:
+    def les_hendelse(self, hendelse):
+        for knapp in self.knapper:
+            if knapp.klikket(hendelse):
+                if knapp.tekst == "Spill":
+                    if self.musikk_spilles:
                         pygame.mixer.music.stop()
-                        self.music_playing = False
-                    return "play"
-                if button.text == "Quit":
-                    return "quit"
+                        self.musikk_spilles = False
+                    return "spill"
+                if knapp.tekst == "Avslutt":
+                    return "avslutt"
         return None
 
-    def update(self):
+    def oppdater(self):
         pass
 
-    def draw(self, screen):
-        screen.fill(BG_COLOR)
+    def tegn(self, skjerm):
+        skjerm.fill(BAKGRUNN_FARGE)
 
-        if self.title_image:
-            img = pygame.transform.scale(self.title_image, (300, 100))
-            screen.blit(img, (self.screen_width // 2 - 150, 80))
+        if self.tittel_bilde:
+            bilde = pygame.transform.scale(self.tittel_bilde, (300, 100))
+            skjerm.blit(bilde, (self.skjerm_bredde // 2 - 150, 80))
         else:
-            title = self.font.render("Gravity Square", True, (255, 255, 255))
-            screen.blit(title, (self.screen_width // 2 - title.get_width() // 2, 120))
+            tittel = self.skrift.render("Gravity Square", True, (255, 255, 255))
+            skjerm.blit(tittel, (self.skjerm_bredde // 2 - tittel.get_width() // 2, 120))
 
-        for button in self.buttons:
-            button.draw(screen, self.font)
+        for knapp in self.knapper:
+            knapp.tegn(skjerm, self.skrift)
 
-    def reset_animations(self):
-        if not self.music_playing:
+    def nullstill(self):
+        if not self.musikk_spilles:
             try:
                 pygame.mixer.music.play(-1)
                 pygame.mixer.music.set_volume(0.5)
-                self.music_playing = True
+                self.musikk_spilles = True
             except:
                 pass

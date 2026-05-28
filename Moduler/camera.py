@@ -1,23 +1,23 @@
 import pygame
 
-class Camera:
-    def __init__(self, screen_width, screen_height):
+class Kamera:
+    def __init__(self, skjerm_bredde, skjerm_hoyde):
         self.x = 0
         self.y = 0
         self.zoom = 1
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        self.skjerm_bredde = skjerm_bredde
+        self.skjerm_hoyde = skjerm_hoyde
 
-    def update(self, target_x, target_y):
-        self.x = target_x - self.screen_width / 2
-        self.y = target_y - self.screen_height / 2
+    def oppdater(self, maal_x, maal_y):
+        self.x = maal_x - self.skjerm_bredde / 2
+        self.y = maal_y - self.skjerm_hoyde / 2
 
-    def apply(self, ex, ey):
-        return ex - self.x, ey - self.y
+    def bruk(self, x, y):
+        return x - self.x, y - self.y
 
-    def apply_rect(self, rect):
-        return pygame.Rect(rect.x - self.x, rect.y - self.y, rect.width, rect.height)
+    def bruk_boks(self, boks):
+        return pygame.Rect(boks.x - self.x, boks.y - self.y, boks.width, boks.height)
 
-    def reset(self):
+    def nullstill(self):
         self.x = 0
         self.y = 0
