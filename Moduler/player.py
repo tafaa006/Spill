@@ -118,8 +118,9 @@ class Spiller:
 
         return drept
 
-    def tegn(self, skjerm, kamera):
-        sx, sy = kamera.bruk(self.x, self.y)
+    def tegn(self, skjerm, kamera_x, kamera_y):
+        sx = self.x - kamera_x
+        sy = self.y - kamera_y
         farge = (255, 0, 255) if self.dasher else (0, 200, 255)
         pygame.draw.rect(skjerm, farge, (sx, sy, self.storrelse, self.storrelse))
 

@@ -2,7 +2,7 @@ import pygame
 
 kule_bredde = 10
 kule_hoyde = 4
-kule_fart = 12
+kule_fart = 8
 
 class Pistol:
     def __init__(self):
@@ -44,9 +44,10 @@ class Pistol:
             if kule[0] < 0 or kule[0] > verden_bredde or kule[1] < 0 or kule[1] > bakke_y:
                 self.kuler.remove(kule)
 
-    def tegn(self, skjerm, kamera):
+    def tegn(self, skjerm, kamera_x, kamera_y):
         for kule in self.kuler:
-            sx, sy = kamera.bruk(kule[0], kule[1])
+            sx = kule[0] - kamera_x
+            sy = kule[1] - kamera_y
             pygame.draw.rect(skjerm, (255, 255, 0), (sx, sy, kule_bredde, kule_hoyde))
 
     def nullstill(self):
