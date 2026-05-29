@@ -1,16 +1,16 @@
 # GRAFYX 777
 
-About
+## About
 Spillet er laget i Pygame (Python) og er en kombinasjon av tre av kode-eksemplene til The Hawk. (Main.py, enemies.py, menu.py)
 
-Installation
+## Installation
 Open the folder with the files in it Open a terminal in this folder and write:
 
 -Pip install pygame
 
 Then run hoved.py to play the game
 
-Tutorial
+## Tutorial
 Start by running the file, then a menu will pop up.
 
 Here you can either chose to change settings by clicking the "Options" button or click the "Play" button to start the game.
@@ -23,7 +23,7 @@ Your goal is to eliminate as many zombies as possible without dying.
 
 You die by colliding with a zombie.
 
-All Keybinds
+## All Keybinds
 Movement :
 W A S D - jump, left, down, right
 
@@ -37,10 +37,10 @@ Left mouse click - click buttons with this key
 Shooting:
 space button - Shoots bullets
 
-Contributing
+## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-License
+## License
 MIT
