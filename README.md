@@ -13,15 +13,16 @@ Then run hoved.py to play the game
 ## Tutorial
 Start by running the file, then a menu will pop up.
 
-Here you can either chose to change settings by clicking the "Options" button or click the "Play" button to start the game.
+Here you can click the "Play" button to start the game.
 
 Then when youve entered the arena, use wasd or the arrows keys to move around.
 
-Use your mouse to click bullets to kill the zombies.
+Use your space button to shhot bullets to kill the enemies.
+You can also jump on goombas to kill them.
 
-Your goal is to eliminate as many zombies as possible without dying.
+Your goal is to eliminate as many goombas as possible without dying.
 
-You die by colliding with a zombie.
+You die by colliding with a goomba or enemy.
 
 ## All Keybinds
 Movement :
